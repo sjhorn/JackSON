@@ -8,6 +8,7 @@ import org.codehaus.groovy.grails.web.converters.AbstractConverter
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller
 
+import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.ObjectMapper
 
 class JackSON extends AbstractConverter {
@@ -23,7 +24,15 @@ class JackSON extends AbstractConverter {
     }
 
     public void render(Writer out) throws ConverterException {
-        new ObjectMapper().writeValue(out, target)
+        try {
+            ObjectMapper mapper = new ObjectMapper() 
+            mapper.configure(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM, false) 
+            mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT, false)
+            mapper.writeValue(out, target)
+        } catch(e) {
+            throw new ConverterException(e)
+        } 
+        
         try {
             out.flush()
             out.close()
